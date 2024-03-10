@@ -1,0 +1,64 @@
+依賴項安裝(一)：
+sudo apt –y update
+ sudo apt –y install \
+  autoconf-archive \
+  libcmocka0 \
+  libcmocka-dev \
+  procps \
+  iproute2 \
+  build-essential \
+  git \
+  pkg-config \
+  gcc \
+  libtool \
+  automake \
+  libssl-dev \
+  uthash-dev \
+  autoconf \
+  doxygen \
+  libjson-c-dev \
+  libini-config-dev \
+  libcurl4-openssl-dev \
+  uuid-dev \
+  libltdl-dev \
+  libusb-1.0-0-dev \
+  libftdi-dev
+
+依賴項安裝(二)：
+sudo apt-get install libnatpmp-dev
+
+Package安裝(一)：
+sudo apt install tpm2-abrmd
+
+Package安裝(二)：
+git clone --branch 4.1.X https://github.com/tpm2-software/tpm2-tools.git
+cd tpm2-tools
+./boostrap
+./configure
+make -j5
+sudo make install
+
+原始碼更改(tpm2_capability.c)：
+        case TPM2_CAP_VENDOR_PROPERTY:
+            //APPEND_CAPABILITY_INFORMATION(intelPttProperty, property,,
+                    //TPM2_MAX_PTT_PROPERTIES);
+
+原始碼更改(tpm2_verifysignature.c)：
+if(rc==tool_rc_success){
+printf("Verify signature successed!\n");
+}
+
+
+
+常用指令：
+sudo tpm2_nvdefine -C o -s 262 -a "ownerread|ownerwrite|policywrite"  0x01000001 
+sudo tpm2_nvundefine 0x01000001
+sudo tpm2_nvwrite -C o -i sig.rssa 0x01000001
+sudo tpm2_changeauth -c o ownerauth
+sudo tpm2_createprimary -C e -c primary.ctx 
+sudo tpm2_create -G rsa -u rsa.pub -r rsa.priv -C primary.ctx
+sudo tpm2_load -C primary.ctx -u rsa.pub -r rsa.priv -c rsa.ctx
+sudo tpm2_evictcontrol -C o -c rsa.ctx 0x81010002
+sudo tpm2_sign -c rsa.ctx -g sha256 -o sig.rssa CO.dat
+sudo tpm2_verifysignature -c rsa.ctx -g sha256 -m CO.dat -s sig.rssa
+
